@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-const ACCESS_TOKEN_TTL = "30m"; // Thời gian sống của access token
+const ACCESS_TOKEN_TTL = "30s"; // Thời gian sống của access token
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; // Thời gian sống của refresh token
 
 class AuthController {
@@ -115,6 +115,38 @@ class AuthController {
             return res.status(204).json({ message: "Đăng xuất thành công" });
         } catch (error) {
             console.error("Lỗi đăng xuất:", error);
+            return res.status(500).json({ message: "Lỗi hệ thống" });
+        }
+    }
+
+    static async refreshToken(req, res) {
+        try {
+            // Lấy token từ cookie
+            const token = req.cookies?.refreshToken;
+            if (!token) {
+                return res
+                    .status(401)
+                    .json({ message: "Không tìm thấy token" });
+            }
+
+            // Tìm session theo refresh token
+            const session = await Session.findOne({ refreshToken: token });
+            if (!session || session.expiresAt < new Date()) {
+                return res.status(401).json({
+                    message: "Token không hợp lệ hoặc đã hết hạn",
+                });
+            }
+
+            // Tạo access token mới
+            const accessToken = jwt.sign(
+                { userId: session.userId },
+                process.env.ACCESS_TOKEN_SECRET,
+                { expiresIn: ACCESS_TOKEN_TTL },
+            );
+
+            return res.status(200).json({ accessToken });
+        } catch (error) {
+            console.error("Lỗi làm mới token:", error);
             return res.status(500).json({ message: "Lỗi hệ thống" });
         }
     }

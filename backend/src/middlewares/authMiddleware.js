@@ -19,7 +19,7 @@ const protectedRoute = async (req, res, next) => {
                 if (err) {
                     console.error("Lỗi xác thực token:", err);
                     return res
-                        .status(403)
+                        .status(401)
                         .json({ message: "Token không hợp lệ" });
                 }
                 // Lấy thông tin người dùng từ token

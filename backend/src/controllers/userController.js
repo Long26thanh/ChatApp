@@ -1,4 +1,4 @@
-class userControllers {
+class UserController {
     async authMe(req, res) {
         try {
             const user = req.user;
@@ -19,4 +19,4 @@ class userControllers {
     }
 }
 
-export default new userControllers();
+export default new UserController();

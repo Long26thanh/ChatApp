@@ -1,0 +1,84 @@
+import Conversation from "../models/Conversation.js";
+import Friend from "../models/Friend.js";
+
+const pair = (a, b) => (a < b ? [a, b] : [b, a]);
+
+export const checkFriendship = async (req, res, next) => {
+    try {
+        const userId = req.user._id;
+        const recipientId = req.body?.recipientId ?? null;
+        const memberIds = req.body?.member ?? [];
+
+        if (!recipientId && memberIds.length === 0) {
+            return res.status(400).json({
+                message: "recipientId hoặc member phải được cung cấp",
+            });
+        }
+
+        if (recipientId) {
+            const [user, friend] = pair(userId.toString(), req.params.userId);
+
+            const isFriend = await Friend.exists({
+                userId: user,
+                friendId: friend,
+            });
+
+            if (!isFriend) {
+                return res.status(403).json({
+                    message: "Bạn chưa kết bạn với người này",
+                });
+            }
+            return next();
+        }
+
+        const friendChecks = memberIds.map(async (memberId) => {
+            const [user, friend] = pair(userId, memberId);
+            return Friend.exists({ userId: user, friendId: friend });
+        });
+
+        const results = await Promise.all(friendChecks);
+        const notFriends = results.filter(Boolean);
+
+        if (notFriends.length > 0) {
+            return res.status(403).json({
+                message:
+                    "Bạn chỉ có thể tạo cuộc trò chuyện với bạn bè của mình",
+                notFriends,
+            });
+        }
+
+        next();
+    } catch (error) {
+        console.error("Lỗi khi kiểm tra mối quan hệ bạn bè:", error);
+        return res.status(500).json({ message: "Lỗi hệ thống" });
+    }
+};
+
+export const checkGroupMembership = async (req, res, next) => {
+    try {
+        const { conversationId } = req.body;
+        const userId = req.user._id;
+        const conversation = await Conversation.findById(conversationId);
+
+        if (!conversation) {
+            return res
+                .status(404)
+                .json({ message: "Cuộc trò chuyện không tồn tại" });
+        }
+
+        const isMember = conversation.participants.some(
+            (p) => p.userId.toString() === userId.toString(),
+        );
+
+        if (!isMember) {
+            return res.status(403).json({
+                message: "Bạn không phải là thành viên của cuộc trò chuyện này",
+            });
+        }
+        req.conversation = conversation;
+        next();
+    } catch (error) {
+        console.error("Lỗi khi kiểm tra thành viên nhóm:", error);
+        return res.status(500).json({ message: "Lỗi hệ thống" });
+    }
+};

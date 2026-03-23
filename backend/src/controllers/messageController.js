@@ -1,0 +1,82 @@
+import Conversation from "../models/Conversation.js";
+import Message from "../models/Message.js";
+import MessageHelper from "../ultils/messageHelper.js";
+
+class MessageController {
+    async sendDirectMessage(req, res) {
+        try {
+            const { recipient, content, conversationId } = req.body;
+            const senderId = req.user._id;
+
+            let conversation;
+            if (content) {
+                return res.status(400).json({ message: "Thiếu nội dung" });
+            }
+
+            if (conversationId) {
+                conversation = await Conversation.findById(conversationId);
+            }
+
+            if (!conversation) {
+                conversation = await Conversation.create({
+                    participants: [
+                        { userId: senderId, joinedAt: new Date() },
+                        { userId: recipient, joinedAt: new Date() },
+                    ],
+                    lastMessageAt: new Date(),
+                    unreadCounts: new Map(),
+                });
+            }
+
+            const message = await Message.create({
+                conversationId: conversation._id,
+                senderId,
+                content,
+            });
+
+            await MessageHelper.updateConversationAfterMessage(
+                conversation,
+                message,
+                senderId,
+            );
+            await conversation.save();
+
+            return res.status(201).json({ message: "Tin nhắn đã được gửi" });
+        } catch (error) {
+            console.error("Lỗi khi gửi tin nhắn:", error);
+            return res.status(500).json({ message: "Lỗi hệ thống" });
+        }
+    }
+
+    async sendGroupMessage(req, res) {
+        try {
+            const { conversationId, content } = req.body;
+            const senderId = req.user._id;
+            const conversation = req.conversation;
+
+            if (!content) {
+                return res.status(400).json({ message: "Thiếu nội dung" });
+            }
+
+            const message = await Message.create({
+                conversationId,
+                senderId,
+                content,
+            });
+
+            await MessageHelper.updateConversationAfterMessage(
+                conversation,
+                message,
+                senderId,
+            );
+            await conversation.save();
+
+            return res.status(201).json({ message });
+        } catch (error) {
+            console.error("Lỗi khi gửi tin nhắn:", error);
+            return res.status(500).json({ message: "Lỗi hệ thống" });
+        }
+    }
+}
+
+export default new MessageController();

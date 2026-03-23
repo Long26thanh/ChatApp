@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-const ACCESS_TOKEN_TTL = "30s"; // Thời gian sống của access token
+const ACCESS_TOKEN_TTL = "30m"; // Thời gian sống của access token
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; // Thời gian sống của refresh token
 
 class AuthController {
@@ -32,7 +32,7 @@ class AuthController {
                 username,
                 hashPassword,
                 email,
-                displayName: `${firstname} ${lastname}`,
+                displayName: `${lastname} ${firstname}`,
             });
 
             return res.status(204).json({ message: "Đăng ký thành công" });

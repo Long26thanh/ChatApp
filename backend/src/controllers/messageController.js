@@ -5,11 +5,11 @@ import MessageHelper from "../ultils/messageHelper.js";
 class MessageController {
     async sendDirectMessage(req, res) {
         try {
-            const { recipient, content, conversationId } = req.body;
+            const { recipientId, content, conversationId } = req.body;
             const senderId = req.user._id;
 
             let conversation;
-            if (content) {
+            if (!content) {
                 return res.status(400).json({ message: "Thiếu nội dung" });
             }
 
@@ -19,9 +19,10 @@ class MessageController {
 
             if (!conversation) {
                 conversation = await Conversation.create({
+                    type: "direct",
                     participants: [
                         { userId: senderId, joinedAt: new Date() },
-                        { userId: recipient, joinedAt: new Date() },
+                        { userId: recipientId, joinedAt: new Date() },
                     ],
                     lastMessageAt: new Date(),
                     unreadCounts: new Map(),
@@ -41,7 +42,7 @@ class MessageController {
             );
             await conversation.save();
 
-            return res.status(201).json({ message: "Tin nhắn đã được gửi" });
+            return res.status(201).json({ message });
         } catch (error) {
             console.error("Lỗi khi gửi tin nhắn:", error);
             return res.status(500).json({ message: "Lỗi hệ thống" });

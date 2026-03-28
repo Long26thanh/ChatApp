@@ -4,14 +4,14 @@ import Message from "../models/Message.js";
 class ConversationController {
     async createConversation(req, res) {
         try {
-            const { type, name, member } = req.body;
+            const { type, name, memberIds } = req.body;
             const userId = req.user._id;
             if (
                 !type ||
                 (type === "group" && !name) ||
-                !member ||
-                !Array.isArray(member) ||
-                member.length === 0
+                !memberIds ||
+                !Array.isArray(memberIds) ||
+                memberIds.length === 0
             ) {
                 return res
                     .status(400)
@@ -21,7 +21,7 @@ class ConversationController {
             let conversation;
 
             if (type === "direct") {
-                const recipientId = member[0];
+                const recipientId = memberIds[0];
                 const existingConversation = await Conversation.findOne({
                     type: "direct",
                     "participants.userId": { $all: [userId, recipientId] },
@@ -33,9 +33,11 @@ class ConversationController {
                         participants: [{ userId }, { userId: recipientId }],
                         lastMessageAt: new Date(),
                     });
-                }
 
-                await conversation.save();
+                    await conversation.save();
+                } else {
+                    conversation = existingConversation;
+                }
             }
 
             if (type === "group") {
@@ -43,7 +45,7 @@ class ConversationController {
                     type: "group",
                     participants: [
                         { userId },
-                        ...member.map((id) => ({ userId: id })),
+                        ...memberIds.map((id) => ({ userId: id })),
                     ],
                     group: {
                         name,
@@ -61,7 +63,7 @@ class ConversationController {
                     .json({ message: "Conversation type không hợp lệ" });
             }
 
-            await conversation.populate(
+            await conversation.populate([
                 {
                     path: "participants.userId",
                     select: "displayName avatarUrl",
@@ -74,7 +76,7 @@ class ConversationController {
                     path: "lastMessage.senderId",
                     select: "displayName avatarUrl",
                 },
-            );
+            ]);
 
             return res.status(201).json({ conversation });
         } catch (error) {

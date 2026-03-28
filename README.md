@@ -1,122 +1,114 @@
 # ChatApp
 
-Ứng dụng chat full-stack được xây dựng với Node.js, Express, MongoDB và React.
-
----
+Ứng dụng chat full-stack sử dụng Node.js, Express, MongoDB và React.
 
 ## Mục lục
 
+- [Tổng quan](#tổng-quan)
 - [Tính năng](#tính-năng)
-- [Tech Stack](#tech-stack)
-- [Cài đặt](#cài-đặt)
+- [Kiến trúc dự án](#kiến-trúc-dự-án)
+- [Tech stack](#tech-stack)
+- [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
+- [Cài đặt nhanh](#cài-đặt-nhanh)
 - [Biến môi trường](#biến-môi-trường)
 - [Chạy ứng dụng](#chạy-ứng-dụng)
-- [API Endpoints](#api-endpoints)
-- [License](#license)
+- [Scripts](#scripts)
+- [API chính](#api-chính)
+- [Ghi chú phát triển](#ghi-chú-phát-triển)
 
----
+## Tổng quan
+
+ChatApp gồm 2 phần:
+
+- Backend API: Express + MongoDB, xác thực bằng Access Token và Refresh Token.
+- Frontend Web: React + Vite + TypeScript, quản lý state bằng Zustand.
 
 ## Tính năng
 
-- Đăng ký / Đăng nhập tài khoản
-- Xác thực bằng JWT (Access Token + Refresh Token)
-- Bảo vệ route với middleware xác thực
-- Quản lý session phía server
-- Giao diện hiện đại với React + Tailwind CSS
-- Thông báo toast khi thao tác thành công / thất bại
+- Đăng ký, đăng nhập, đăng xuất tài khoản.
+- Tự động làm mới access token khi hết hạn.
+- Quản lý danh sách bạn bè và lời mời kết bạn.
+- Tạo và hiển thị cuộc trò chuyện direct/group.
+- Gửi tin nhắn direct và group.
+- Giao diện chat theo layout sidebar + chat window.
 
----
+## Công nghệ
 
-## Tech Stack
+### Backend
 
-**Backend**
+- Node.js
+- Express 5
+- MongoDB + Mongoose
 
-| Thư viện             | Mục đích                  |
-| -------------------- | ------------------------- |
-| Node.js + Express v5 | HTTP server & routing     |
-| MongoDB + Mongoose   | Cơ sở dữ liệu             |
-| bcrypt               | Mã hoá mật khẩu           |
-| jsonwebtoken         | Tạo & xác thực JWT        |
-| cookie-parser        | Đọc cookie từ request     |
-| cors                 | Xử lý CORS                |
-| dotenv               | Quản lý biến môi trường   |
-| nodemon              | Hot-reload khi phát triển |
+### Frontend
 
-**Frontend**
+- React + TypeScript
+- Vite
+- React Router
 
-| Thư viện              | Mục đích            |
-| --------------------- | ------------------- |
-| React 19 + TypeScript | UI framework        |
-| Vite                  | Build tool          |
-| React Router v7       | Client-side routing |
-| Zustand               | State management    |
-| Axios                 | Gọi HTTP API        |
-| React Hook Form + Zod | Form & validation   |
-| Tailwind CSS v4       | Styling             |
-| shadcn/ui + Radix UI  | UI components       |
-| Sonner                | Toast notifications |
-
-## Cài đặt
+## Cài đặt nhanh
 
 ```bash
-# Clone repository
 git clone https://github.com/your-username/ChatApp.git
 cd ChatApp
 
-# Cài đặt dependencies backend
 cd backend
 npm install
 
-# Cài đặt dependencies frontend
 cd ../frontend
 npm install
 ```
 
----
-
 ## Biến môi trường
 
-Tạo file `.env` trong thư mục `backend/`:
+Tạo file .env trong thư mục backend với nội dung:
 
 ```env
 PORT=5001
-MONGO_URI=mongodb://localhost:27017/chatapp
-JWT_SECRET=your_jwt_secret_key
-JWT_REFRESH_SECRET=your_refresh_secret_key
 CLIENT_URL=http://localhost:5173
+MONGODB_CONNECTION_STRING=mongodb://localhost:27017/chatapp
+ACCESS_TOKEN_SECRET=replace_with_your_secret
+NODE_ENV=development
 ```
 
----
+Ghi chú:
+
+- ACCESS_TOKEN_SECRET là bắt buộc để ký/verify access token.
+- Refresh token đang được lưu trong DB và cookie httpOnly.
+- NODE_ENV=production sẽ bật secure cookie.
 
 ## Chạy ứng dụng
 
-Mở 2 terminal riêng biệt:
+Mở 2 terminal:
 
 ```bash
-# Terminal 1 — Backend
+# Terminal 1
 cd backend
 npm run dev
 
-# Terminal 2 — Frontend
+# Terminal 2
 cd frontend
 npm run dev
 ```
 
-- Backend chạy tại: `http://localhost:5001`
-- Frontend chạy tại: `http://localhost:5173`
+Địa chỉ mặc định:
 
----
+- Backend: http://localhost:5001
+- Frontend: http://localhost:5173
 
-## API Endpoints
+## Scripts
 
-### Auth (Public)
+### Backend
 
-| Method | Endpoint        | Mô tả                 |
-| ------ | --------------- | --------------------- |
-| `POST` | `/auth/signup`  | Đăng ký tài khoản mới |
-| `POST` | `/auth/signin`  | Đăng nhập             |
-| `POST` | `/auth/refresh` | Làm mới Access Token  |
-| `POST` | `/auth/signout` | Đăng xuất             |
+- npm run dev: Chạy server với nodemon
+- npm start: Chạy server production mode
+
+### Frontend
+
+- npm run dev: Chạy Vite dev server
+- npm run build: Build production
+- npm run preview: Preview bản build
+- npm run lint: Chạy ESLint
 
 ## License
 

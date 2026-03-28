@@ -5,18 +5,18 @@ const pair = (a, b) => (a < b ? [a, b] : [b, a]);
 
 export const checkFriendship = async (req, res, next) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user._id.toString();
         const recipientId = req.body?.recipientId ?? null;
-        const memberIds = req.body?.member ?? [];
+        const memberIds = req.body?.memberIds ?? [];
 
         if (!recipientId && memberIds.length === 0) {
             return res.status(400).json({
-                message: "recipientId hoặc member phải được cung cấp",
+                message: "recipientId hoặc memberIds phải được cung cấp",
             });
         }
 
         if (recipientId) {
-            const [user, friend] = pair(userId.toString(), req.params.userId);
+            const [user, friend] = pair(userId, recipientId);
 
             const isFriend = await Friend.exists({
                 userId: user,

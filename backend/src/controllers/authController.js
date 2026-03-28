@@ -6,6 +6,14 @@ import crypto from "crypto";
 
 const ACCESS_TOKEN_TTL = "30m"; // Thời gian sống của access token
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; // Thời gian sống của refresh token
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+const refreshCookieOptions = {
+    httpOnly: true,
+    secure: IS_PRODUCTION,
+    sameSite: IS_PRODUCTION ? "none" : "lax",
+    maxAge: REFRESH_TOKEN_TTL,
+};
 
 class AuthController {
     static async signUp(req, res) {
@@ -83,12 +91,7 @@ class AuthController {
                 expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL),
             });
 
-            res.cookie("refreshToken", refreshToken, {
-                httpOnly: true,
-                secure: true,
-                sameSite: "none",
-                maxAge: REFRESH_TOKEN_TTL,
-            });
+            res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
             return res.status(200).json({
                 message: `Người dùng ${user.displayName} đăng nhập thành công`,
@@ -108,8 +111,8 @@ class AuthController {
                 await Session.deleteOne({ refreshToken });
                 res.clearCookie("refreshToken", {
                     httpOnly: true,
-                    secure: true,
-                    sameSite: "none",
+                    secure: IS_PRODUCTION,
+                    sameSite: IS_PRODUCTION ? "none" : "lax",
                 });
             }
             return res.status(204).json({ message: "Đăng xuất thành công" });

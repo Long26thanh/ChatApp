@@ -7,14 +7,14 @@
 - [Tổng quan](#tổng-quan)
 - [Tính năng](#tính-năng)
 - [Kiến trúc dự án](#kiến-trúc-dự-án)
-- [Tech stack](#tech-stack)
+- [Công nghệ](#công-nghệ)
 - [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
 - [Cài đặt nhanh](#cài-đặt-nhanh)
 - [Biến môi trường](#biến-môi-trường)
 - [Chạy ứng dụng](#chạy-ứng-dụng)
 - [Scripts](#scripts)
-- [API chính](#api-chính)
-- [Ghi chú phát triển](#ghi-chú-phát-triển)
+- [Realtime Socket.IO](#realtime-socketio)
+- [Lỗi thường gặp](#lỗi-thường-gặp)
 
 ## Tổng quan
 
@@ -30,6 +30,7 @@ ChatApp gồm 2 phần:
 - Quản lý danh sách bạn bè và lời mời kết bạn.
 - Tạo và hiển thị cuộc trò chuyện direct/group.
 - Gửi tin nhắn direct và group.
+- Cập nhật tin nhắn realtime cho cả 2 phía bằng Socket.IO.
 - Giao diện chat theo layout sidebar + chat window.
 
 ## Công nghệ
@@ -39,12 +40,16 @@ ChatApp gồm 2 phần:
 - Node.js
 - Express 5
 - MongoDB + Mongoose
+- Socket.IO
+- JWT + Cookie Parser
 
 ### Frontend
 
 - React + TypeScript
 - Vite
 - React Router
+- Zustand
+- Socket.IO Client
 
 ## Cài đặt nhanh
 
@@ -59,7 +64,16 @@ cd ../frontend
 npm install
 ```
 
+Nếu gặp lỗi peer dependency khi cài frontend, chạy:
+
+```bash
+cd frontend
+npm install --legacy-peer-deps
+```
+
 ## Biến môi trường
+
+### Backend
 
 Tạo file .env trong thư mục backend với nội dung:
 
@@ -71,11 +85,14 @@ ACCESS_TOKEN_SECRET=replace_with_your_secret
 NODE_ENV=development
 ```
 
-Ghi chú:
+### Frontend
 
-- ACCESS_TOKEN_SECRET là bắt buộc để ký/verify access token.
-- Refresh token đang được lưu trong DB và cookie httpOnly.
-- NODE_ENV=production sẽ bật secure cookie.
+Tạo file .env trong thư mục frontend với nội dung:
+
+```env
+VITE_API_URL=http://localhost:5001
+VITE_SOCKET_URL=http://localhost:5001
+```
 
 ## Chạy ứng dụng
 
@@ -95,6 +112,14 @@ npm run dev
 
 - Backend: http://localhost:5001
 - Frontend: http://localhost:5173
+
+## Realtime Socket.IO
+
+- Backend khởi tạo Socket.IO server ở cổng API và bật CORS theo CLIENT_URL.
+- Frontend kết nối Socket.IO qua VITE_SOCKET_URL.
+- Event chính:
+    - onlineUsers: cập nhật danh sách user online.
+    - new-message: đẩy tin nhắn mới để cập nhật UI realtime.
 
 ## Scripts
 

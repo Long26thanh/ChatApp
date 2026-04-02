@@ -33,6 +33,45 @@ class MessageHelper {
             );
         }
     }
+
+    static async emitNewMessage(io, conversation, message, onlineUsers) {
+        try {
+            const unreadCounts =
+                conversation.unreadCounts instanceof Map
+                    ? Object.fromEntries(conversation.unreadCounts)
+                    : (conversation.unreadCounts ?? {});
+
+            const payload = {
+                message,
+                conversation: {
+                    _id: conversation._id.toString(),
+                    lastMessage: conversation.lastMessage,
+                    lastMessageAt: conversation.lastMessageAt,
+                },
+                unreadCounts,
+            };
+
+            io.to(conversation._id.toString()).emit("new-message", payload);
+
+            // Also emit directly to online participants in case a newly created
+            // conversation room has not been joined yet.
+            if (onlineUsers instanceof Map) {
+                const socketIds = new Set();
+                (conversation.participants ?? []).forEach((participant) => {
+                    const memberId = participant?.userId?.toString?.();
+                    if (!memberId) return;
+                    const socketId = onlineUsers.get(memberId);
+                    if (socketId) socketIds.add(socketId);
+                });
+
+                socketIds.forEach((socketId) => {
+                    io.to(socketId).emit("new-message", payload);
+                });
+            }
+        } catch (error) {
+            console.error("Lỗi khi phát tin nhắn mới qua Socket.IO:", error);
+        }
+    }
 }
 
 export default MessageHelper;

@@ -4,10 +4,10 @@ import cors from "cors";
 import { connectDB } from "./libs/db.js";
 import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
+import { app, server } from "./socket/index.js";
 
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
@@ -25,7 +25,7 @@ routes(app);
 
 connectDB().then(() => {
     // Routes
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
         console.log(`Server bắt đầu trên cổng ${PORT}`);
     });
 });

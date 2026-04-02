@@ -159,6 +159,24 @@ class ConversationController {
             return res.status(500).json({ message: "Lỗi hệ thống" });
         }
     }
+
+    async getUserConversationsForSocketIO(userId) {
+        try {
+            const conversations = await Conversation.find(
+                {
+                    "participants.userId": userId,
+                },
+                { _id: 1 },
+            );
+            return conversations.map((conv) => conv._id.toString());
+        } catch (error) {
+            console.error(
+                "Lỗi khi lấy danh sách cuộc trò chuyện cho Socket.IO:",
+                error,
+            );
+            return [];
+        }
+    }
 }
 
 export default new ConversationController();

@@ -1,6 +1,7 @@
 import Conversation from "../models/Conversation.js";
 import Message from "../models/Message.js";
 import MessageHelper from "../ultils/messageHelper.js";
+import { io, onlineUsers } from "../socket/index.js";
 
 class MessageController {
     async sendDirectMessage(req, res) {
@@ -42,6 +43,13 @@ class MessageController {
             );
             await conversation.save();
 
+            await MessageHelper.emitNewMessage(
+                io,
+                conversation,
+                message,
+                onlineUsers,
+            );
+
             return res.status(201).json({ message });
         } catch (error) {
             console.error("Lỗi khi gửi tin nhắn:", error);
@@ -71,6 +79,13 @@ class MessageController {
                 senderId,
             );
             await conversation.save();
+
+            await MessageHelper.emitNewMessage(
+                io,
+                conversation,
+                message,
+                onlineUsers,
+            );
 
             return res.status(201).json({ message });
         } catch (error) {

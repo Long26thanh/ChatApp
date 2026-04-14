@@ -1,12 +1,19 @@
 import User from "../models/User.js";
 import Friend from "../models/Friend.js";
 import FriendRequest from "../models/FriendRequest.js";
+import mongoose from "mongoose";
 
 class FriendController {
     async sendFriendRequest(req, res) {
         try {
             const { to, message } = req.body;
             const from = req.user._id;
+
+            if (!to || !mongoose.Types.ObjectId.isValid(to)) {
+                return res.status(400).json({
+                    message: "ID người dùng nhận lời mời không hợp lệ",
+                });
+            }
 
             if (from.toString() === to) {
                 return res.status(400).json({
@@ -145,8 +152,8 @@ class FriendController {
             const friendships = await Friend.find({
                 $or: [{ userId }, { friendId: userId }],
             })
-                .populate("userId", "_id displayName avatarUrl")
-                .populate("friendId", "_id displayName avatarUrl");
+                .populate("userId", "_id displayName avatarUrl username")
+                .populate("friendId", "_id displayName avatarUrl username");
 
             if (!friendships.length) {
                 return res.status(200).json({ friends: [] });

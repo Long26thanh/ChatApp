@@ -43,6 +43,10 @@ io.on("connection", async (socket) => {
         socket.join(id); // Tham gia vào phòng của cuộc trò chuyện
     });
 
+    socket.on("join-conversation", (conversationId) => {
+        socket.join(conversationId);
+    });
+
     // Tham gia vào các phòng tương ứng với các cuộc trò chuyện của người dùng
     socket.on("disconnect", () => {
         // Xóa người dùng khỏi danh sách online khi ngắt kết nối

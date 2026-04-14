@@ -4,6 +4,6 @@ import UserController from "../controllers/userController.js";
 const router = express.Router();
 
 router.get("/me", UserController.authMe);
-router.get("/test", UserController.test);
+router.get("/search", UserController.searchUserByUsername);
 
 export default router;

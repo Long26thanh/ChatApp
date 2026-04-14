@@ -37,7 +37,7 @@ export const checkFriendship = async (req, res, next) => {
         });
 
         const results = await Promise.all(friendChecks);
-        const notFriends = results.filter(Boolean);
+        const notFriends = memberIds.filter((_, index) => !results[index]);
 
         if (notFriends.length > 0) {
             return res.status(403).json({
